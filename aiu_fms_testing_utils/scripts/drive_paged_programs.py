@@ -723,6 +723,7 @@ for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_promp
                 level_1_metrics, lambda m: m[0] >= args.cross_entropy_threshold
             )
             failure_rate = len(ce_fail_responses) / len(level_1_metrics)
+            dprint(f'Logging failure rate for Program {program_id}, Prompt Shape: {valid_prompt}, Failure Rate: {failure_rate}')
             if failure_rate >= args.failure_rate_threshold:
                 failed_cases.append((program_id, valid_prompt, failure_rate))
 
