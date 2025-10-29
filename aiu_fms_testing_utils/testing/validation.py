@@ -426,8 +426,9 @@ def get_validation_info_path(
     dtype: str = "fp16",
     **kwargs,
 ):
-    if aftu_version is None:
-        aftu_version = version_tuple
+    # if aftu_version is None:
+    #     aftu_version = version_tuple
+    aftu_version=(0, 4, 3)
 
     sample_key = kwargs.get("sample_key", None)
 
