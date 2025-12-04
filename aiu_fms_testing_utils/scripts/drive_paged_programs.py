@@ -558,6 +558,8 @@ else:
         used_keys = set()
         # for each program, we need to check if we have a shape that satisfies the --programs request
         for program_seq_key, valid_prompt_shapes in filtered_program_map.items():
+            print("\n Valid Prompt Shapes", valid_prompt_shapes)
+            print("\n program_id", program_id)
             # if ? or numeric => we need to check if we have found at least one valid key to stop
             if (program_id == "?" or program_id.isnumeric()) and len(used_keys) > 0:
                 break
