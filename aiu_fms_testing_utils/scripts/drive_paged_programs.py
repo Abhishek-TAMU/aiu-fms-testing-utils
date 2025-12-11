@@ -564,9 +564,9 @@ else:
         # for each program, we need to check if we have a shape that satisfies the --programs request
         for program_seq_key, valid_prompt_shapes in filtered_program_map.items():
             program_count+=1
-            print(f"\n program_count: {program_count}: Valid Prompt Shapes: {valid_prompt_shapes}")
-            print(f"\n program_count: {program_count}: program_info: {program_info}")
-            print(f"\n program_count: {program_count}: program_seq_key: {program_seq_key}")
+            # print(f"\n program_count: {program_count}: Valid Prompt Shapes: {valid_prompt_shapes}")
+            # print(f"\n program_count: {program_count}: program_info: {program_info}")
+            # print(f"\n program_count: {program_count}: program_seq_key: {program_seq_key}")
             
             # if ? or numeric => we need to check if we have found at least one valid key to stop
             if (program_id == "?" or program_id.isnumeric()) and len(used_keys) > 0:
@@ -576,7 +576,7 @@ else:
                 continue
 
             for valid_prompt_shape in valid_prompt_shapes:
-                print(f"\n program_count: {program_count}: Going to check valid_prompt_shape: {valid_prompt_shape}")
+                # print(f"\n program_count: {program_count}: Going to check valid_prompt_shape: {valid_prompt_shape}")
                 # make sure the criteria for batch limit and prompt limit is satisfied
                 # eval is safe here because we have limited what type and limit can be before
 
@@ -587,7 +587,7 @@ else:
                     f"valid_prompt_shape[1] {prompt_length_limit_type} {prompt_length_limit}"
                 )
                 if batch_check and prompt_check:
-                    print(f"\n program_count: {program_count}: Passed batch_check and prompt_check {valid_prompt_shape}")
+                    # print(f"\n program_count: {program_count}: Passed batch_check and prompt_check {valid_prompt_shape}")
                     # when we enforce homogeneous prompt programs, we will cycle through all sizes between the min of a program and the valid prompt sequence length
                     # if there does not exist enough sequence sizes between this range, we will cycle back to the beginning
                     # in the event we don't have enough sequences that satisfy the enforce_sizes, we will repeat sequences and warn the user
@@ -623,7 +623,7 @@ else:
                             )
                         )
                         used_keys.add(program_seq_key[0])
-                        print(f"\n program_count: {program_count}: Going to break {valid_prompt_shape}")
+                        # print(f"\n program_count: {program_count}: Going to break {valid_prompt_shape}")
                         break
                     except ValueError:
                         dprint(
