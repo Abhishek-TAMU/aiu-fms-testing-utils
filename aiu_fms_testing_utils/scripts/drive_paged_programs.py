@@ -753,6 +753,8 @@ for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_promp
                 prefill_chunk_size=args.prefill_chunk_size,
                 **extra_kwargs,
             )
+            print("Logging aiu_validation_info", aiu_validation_info)
+            print("Logging cpu_validation_info", cpu_validation_info)
 
             if local_rank == 0:
                 for sentence_idx, (reference_sentence, test_sentence) in enumerate(
