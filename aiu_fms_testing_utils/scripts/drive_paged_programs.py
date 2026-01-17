@@ -706,8 +706,8 @@ for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_promp
                 **extra_kwargs,
             )
 
-            print("Logging aiu_validation_info", aiu_validation_info)
-            print("Logging cpu_validation_info", cpu_validation_info)
+            print("Logging aiu_validation_info", aiu_validation_info.get_info("logits"))
+            print("Logging cpu_validation_info", cpu_validation_info.get_info("logits"))
 
             # capture all level 1 metrics
             level_1_metrics = capture_level_1_metrics(
@@ -753,8 +753,6 @@ for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_promp
                 prefill_chunk_size=args.prefill_chunk_size,
                 **extra_kwargs,
             )
-            print("Logging aiu_validation_info", aiu_validation_info.get_info("logits"))
-            print("Logging cpu_validation_info", cpu_validation_info.get_info("logits"))
 
             if local_rank == 0:
                 for sentence_idx, (reference_sentence, test_sentence) in enumerate(
