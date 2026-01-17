@@ -39,8 +39,9 @@ from aiu_fms_testing_utils.utils.aiu_setup import aiu_dist_setup, dprint, local_
 from aiu_fms_testing_utils.utils.paged import (
     ProgramCriteria,
     get_programs_prompts,
-    KVCACHE_NUM_BLOCKS_HINT,
 )
+from aiu_fms_testing_utils.utils.dpp_config import DPPRunnerConfig
+from aiu_fms_testing_utils.utils.env_utils import scoped_environ
 from aiu_fms_testing_utils.testing.utils import format_kwargs_to_string
 
 parser = argparse.ArgumentParser(
@@ -378,7 +379,14 @@ with stagger_region(args.stagger_load):
 
 model.eval()
 fx_config.backed_size_oblivious = True
-model.compile(backend="sendnn", options={"sendnn.dynamic": True})
+
+model_config = DPPRunnerConfig()
+model_config.setup_config(
+    model_variant, USE_DISTRIBUTED, dist.get_world_size(), args.prefill_chunk_size
+)
+with scoped_environ(model_config.env_updates()):
+    # Temporarily set environment variables needed for compile
+    model.compile(backend="sendnn", options={"sendnn.dynamic": True})
 
 __maybe_prepare_fp8_weights(model, is_fp8)
 
@@ -402,15 +410,10 @@ prompt_list = [torch.arange(0, 64, dtype=torch.int64)]
 if is_fp8:
     prompt_list = prompt_list * 2
 input_ids, extra_kwargs = pad_input_ids(prompt_list, min_pad_length=64)
-extra_kwargs["mask"] = extra_kwargs["mask"].to(torch.float16)
 
+extra_kwargs["mask"] = extra_kwargs["mask"].to(torch.float16)
 extra_kwargs["attn_name"] = ATTN_NAME
-if (
-    "granite-3.3-8b-instruct" in model_variant
-    and USE_DISTRIBUTED
-    and dist.get_world_size() == 4
-):
-    extra_kwargs["_kvcache_num_blocks_hint"] = KVCACHE_NUM_BLOCKS_HINT
+extra_kwargs["_kvcache_num_blocks_hint"] = model_config.num_blocks
 warmup_model(
     model,
     input_ids,
@@ -513,116 +516,118 @@ program_map = get_programs_prompts(
     max_batch_size=max_batch_size,
     max_tkv=max_tkv,
     program_cycles=max_new_tokens,
+    tkv_limit=model_config.tkv_limit,
     prioritize_large_batch_sizes=args.prioritize_large_batch_sizes,
 )
 for v in program_map.values():
     random.Random(42).shuffle(v)
 
-
 # select prompts that fit the batch size criteria
-def get_program_prompt_list():
-    if custom_shape:
-        prompt_found = 0
-        for program_criteria_seq, valid_prompt_shapes in program_map.items():
-            for valid_prompt_shape in valid_prompt_shapes:
-                if valid_prompt_shape == custom_shape:
-                    enforce_sizes = [valid_prompt_shape[1]]
-                    input_ids, extra_kwargs, sample_key = __prepare_inputs(
-                        valid_prompt_shape[0],
-                        valid_prompt_shape[1],
-                        tokenizer,
-                        enforce_sizes=enforce_sizes,
-                    )
-                    prompt_found = 1
-                    yield (
+valid_prompts = []
+if custom_shape:
+    for program_criteria_seq, valid_prompt_shapes in program_map.items():
+        for valid_prompt_shape in valid_prompt_shapes:
+            if valid_prompt_shape == custom_shape:
+                enforce_sizes = [valid_prompt_shape[1]]
+                input_ids, extra_kwargs, sample_key = __prepare_inputs(
+                    valid_prompt_shape[0],
+                    valid_prompt_shape[1],
+                    tokenizer,
+                    enforce_sizes=enforce_sizes,
+                )
+                valid_prompts = [
+                    (
                         program_criteria_seq[0].program_id,
                         custom_shape,
                         input_ids,
                         extra_kwargs,
                         sample_key,
                     )
-                    break
-            if prompt_found:
+                ]
                 break
-    else:
-        for program_info in programs:
-            program_id = program_info.program_id
-            batch_size_limit = program_info.batch_size_limit
-            batch_size_limit_type = program_info.batch_size_limit_type
-            prompt_length_limit = program_info.prompt_length_limit
-            prompt_length_limit_type = program_info.prompt_length_limit_type
+        if len(valid_prompts) > 0:
+            break
+else:
+    for program_info in programs:
+        program_id = program_info.program_id
+        batch_size_limit = program_info.batch_size_limit
+        batch_size_limit_type = program_info.batch_size_limit_type
+        prompt_length_limit = program_info.prompt_length_limit
+        prompt_length_limit_type = program_info.prompt_length_limit_type
 
-            filtered_program_map = program_map
-            if program_id.isnumeric():
-                filtered_program_map = {
-                    k: v
-                    for k, v in program_map.items()
-                    if k[0] == program_criteria_list[int(program_id)]
-                }
-            used_keys = set()
-            # for each program, we need to check if we have a shape that satisfies the --programs request
-            for program_seq_key, valid_prompt_shapes in filtered_program_map.items():
-                # if ? or numeric => we need to check if we have found at least one valid key to stop
-                if (program_id == "?" or program_id.isnumeric()) and len(used_keys) > 0:
-                    break
-                # if * => we need to see if we have found the first key to see if we should skip
-                elif program_id == "*" and program_seq_key[0] in used_keys:
-                    continue
+        filtered_program_map = program_map
+        if program_id.isnumeric():
+            filtered_program_map = {
+                k: v
+                for k, v in program_map.items()
+                if k[0] == program_criteria_list[int(program_id)]
+            }
+        used_keys = set()
+        # for each program, we need to check if we have a shape that satisfies the --programs request
+        for program_seq_key, valid_prompt_shapes in filtered_program_map.items():
+            # if ? or numeric => we need to check if we have found at least one valid key to stop
+            if (program_id == "?" or program_id.isnumeric()) and len(used_keys) > 0:
+                break
+            # if * => we need to see if we have found the first key to see if we should skip
+            elif program_id == "*" and program_seq_key[0] in used_keys:
+                continue
 
-                for valid_prompt_shape in valid_prompt_shapes:
-                    # make sure the criteria for batch limit and prompt limit is satisfied
-                    # eval is safe here because we have limited what type and limit can be before
+            for valid_prompt_shape in valid_prompt_shapes:
+                # make sure the criteria for batch limit and prompt limit is satisfied
+                # eval is safe here because we have limited what type and limit can be before
 
-                    batch_check = eval(
-                        f"valid_prompt_shape[0] {batch_size_limit_type} {batch_size_limit}"
-                    )
-                    prompt_check = eval(
-                        f"valid_prompt_shape[1] {prompt_length_limit_type} {prompt_length_limit}"
-                    )
-                    if batch_check and prompt_check:
-                        # when we enforce homogeneous prompt programs, we will cycle through all sizes between the min of a program and the valid prompt sequence length
-                        # if there does not exist enough sequence sizes between this range, we will cycle back to the beginning
-                        # in the event we don't have enough sequences that satisfy the enforce_sizes, we will repeat sequences and warn the user
-                        enforce_sizes = [valid_prompt_shape[1]]
-                        if args.enforce_homogeneous_prompt_programs:
-                            # this will get the number of bits for the sequence length and shift to get the power of 2 that is less than or equal to the sequence length
-                            tkv_cutoff = 1 << (valid_prompt_shape[1].bit_length() - 1)
-                            possible_seq_lengths = [
-                                _ for _ in range(tkv_cutoff, valid_prompt_shape[1], 64)
-                            ]
-                            # favor sequences that are close to the valid prompt length
-                            possible_seq_lengths.reverse()
-                            enforce_sizes = enforce_sizes + list(
-                                itertools.islice(
-                                    itertools.cycle(possible_seq_lengths),
-                                    valid_prompt_shape[0] - 1,
-                                )
+                batch_check = eval(
+                    f"valid_prompt_shape[0] {batch_size_limit_type} {batch_size_limit}"
+                )
+                prompt_check = eval(
+                    f"valid_prompt_shape[1] {prompt_length_limit_type} {prompt_length_limit}"
+                )
+                if batch_check and prompt_check:
+                    # when we enforce homogeneous prompt programs, we will cycle through all sizes between the min of a program and the valid prompt sequence length
+                    # if there does not exist enough sequence sizes between this range, we will cycle back to the beginning
+                    # in the event we don't have enough sequences that satisfy the enforce_sizes, we will repeat sequences and warn the user
+                    enforce_sizes = [valid_prompt_shape[1]]
+                    if args.enforce_homogeneous_prompt_programs:
+                        # this will get the number of bits for the sequence length and shift to get the power of 2 that is less than or equal to the sequence length
+                        tkv_cutoff = 1 << (valid_prompt_shape[1].bit_length() - 1)
+                        possible_seq_lengths = [
+                            _ for _ in range(tkv_cutoff, valid_prompt_shape[1], 64)
+                        ]
+                        # favor sequences that are close to the valid prompt length
+                        possible_seq_lengths.reverse()
+                        enforce_sizes = enforce_sizes + list(
+                            itertools.islice(
+                                itertools.cycle(possible_seq_lengths),
+                                valid_prompt_shape[0] - 1,
                             )
-                        try:
-                            input_ids, extra_kwargs, sample_key = __prepare_inputs(
-                                valid_prompt_shape[0],
-                                valid_prompt_shape[1],
-                                tokenizer,
-                                enforce_sizes=enforce_sizes,
-                            )
-                            used_keys.add(program_seq_key[0])
-                            yield (
+                        )
+                    try:
+                        input_ids, extra_kwargs, sample_key = __prepare_inputs(
+                            valid_prompt_shape[0],
+                            valid_prompt_shape[1],
+                            tokenizer,
+                            enforce_sizes=enforce_sizes,
+                        )
+                        valid_prompts.append(
+                            (
                                 program_seq_key[0],
                                 valid_prompt_shape,
                                 input_ids,
                                 extra_kwargs,
                                 sample_key,
                             )
-                            break
-                        except ValueError:
-                            dprint(
-                                f"No valid sample exists in dataset for this input shape {valid_prompt_shape}"
-                            )
+                        )
+                        used_keys.add(program_seq_key[0])
+                        break
+                    except ValueError:
+                        dprint(
+                            f"No valid sample exists in dataset for this input shape {valid_prompt_shape}"
+                        )
 
-            if len(used_keys) == 0 and local_rank == 0:
-                dprint(
-                    f"no valid prompt shape was found which would result in program {program_id} that satisfied batch{batch_size_limit_type}{batch_size_limit} and prompt_length{prompt_length_limit_type}{prompt_length_limit}"
-                )
+        if len(used_keys) == 0 and local_rank == 0:
+            dprint(
+                f"no valid prompt shape was found which would result in program {program_id} that satisfied batch{batch_size_limit_type}{batch_size_limit} and prompt_length{prompt_length_limit_type}{prompt_length_limit}"
+            )
 
 
 # metric calculator based on the cross-entropy and mean diff for each decode step
@@ -641,20 +646,9 @@ def __metric_calculator(r: torch.Tensor, t: torch.Tensor):
 
 failed_cases = []
 # for each program and valid prompt (batch size, sequence length)
-for (
-    program_id,
-    valid_prompt,
-    input_ids,
-    extra_kwargs,
-    sample_key,
-) in get_program_prompt_list():
+for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_prompts:
     extra_kwargs["attn_name"] = ATTN_NAME
-    if (
-        "granite-3.3-8b-instruct" in model_variant
-        and USE_DISTRIBUTED
-        and dist.get_world_size() == 4
-    ):
-        extra_kwargs["_kvcache_num_blocks_hint"] = KVCACHE_NUM_BLOCKS_HINT
+    extra_kwargs["_kvcache_num_blocks_hint"] = model_config.num_blocks
 
     if local_rank == 0:
         dprint(f"*** testing program {program_id} ***")
@@ -711,6 +705,9 @@ for (
                 prefill_chunk_size=args.prefill_chunk_size,
                 **extra_kwargs,
             )
+
+            print("Logging aiu_validation_info", aiu_validation_info)
+            print("Logging cpu_validation_info", cpu_validation_info)
 
             # capture all level 1 metrics
             level_1_metrics = capture_level_1_metrics(
