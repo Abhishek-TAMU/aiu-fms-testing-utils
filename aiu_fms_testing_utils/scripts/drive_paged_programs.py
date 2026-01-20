@@ -709,12 +709,12 @@ for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_promp
             if local_rank == 0:
                 print("Logging aiu_validation_info", aiu_validation_info.get_info("logits"))
                 print("Logging cpu_validation_info", cpu_validation_info.get_info("logits"))
-                if int(program_id) == 18:
-                    # Print all logits of aiu_validation_info and cpu_validation_info
-                    aiu_logits = aiu_validation_info.get_info("logits")
-                    cpu_logits = cpu_validation_info.get_info("logits")
-                    print("AIU: num of all tokens =", len(aiu_logits))
-                    print("CPU: num of all tokens =", len(cpu_logits))
+                # if int(program_id) == 18:
+                #     # Print all logits of aiu_validation_info and cpu_validation_info
+                #     aiu_logits = aiu_validation_info.get_info("logits")
+                #     cpu_logits = cpu_validation_info.get_info("logits")
+                #     print("AIU: num of all tokens =", len(aiu_logits))
+                #     print("CPU: num of all tokens =", len(cpu_logits))
 
                     
                     # for id,logits_value in enumerate(aiu_logits[0][0]):
