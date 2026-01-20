@@ -717,14 +717,15 @@ for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_promp
                     print("CPU: num of all tokens =", len(cpu_logits))
 
                     
-                    for id,logits_value in enumerate(aiu_logits[0][0]):
-                        print("tensor value for ID: aiu_logits =", id, logits_value)
+                    # for id,logits_value in enumerate(aiu_logits[0][0]):
+                    #     print("tensor value for ID: aiu_logits =", id, logits_value)
 
             # capture all level 1 metrics
             level_1_metrics = capture_level_1_metrics(
                 cpu_validation_info.get_info("logits"),
                 aiu_validation_info.get_info("logits"),
                 top_k_loss_calculator(20, __metric_calculator),
+                program_id
             )
 
             cpu_tokens = cpu_validation_info.get_info("tokens")

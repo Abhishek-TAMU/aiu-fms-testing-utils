@@ -365,7 +365,7 @@ def top_k_loss_calculator(
 
 
 def capture_level_1_metrics(
-    reference_logits_per_sentence, test_logits_per_sentence, metrics_calculator=None
+    reference_logits_per_sentence, test_logits_per_sentence, metrics_calculator=None, program_id=None
 ):
     loss_metrics = []
 
@@ -385,6 +385,8 @@ def capture_level_1_metrics(
             else:
                 metrics_value = metrics_calculator(reference_logits, test_logits)
 
+            if int(program_id) == 18:
+                print("Top 20 AIU and CPU Logits for sentence token_idx", sentence_idx, token_idx, test_logits, reference_logits)
             loss_metrics.append((sentence_idx, token_idx, metrics_value))
 
     return loss_metrics
