@@ -385,6 +385,7 @@ def capture_level_1_metrics(
             else:
                 metrics_value = metrics_calculator(reference_logits, test_logits)
 
+            print("program_id.__str__", program_id.__str__, program_id.__str__=="ProgramCriteria(program_id=18)")
             if program_id.__str__ == "ProgramCriteria(program_id=18)":
                 print("Top 20 AIU and CPU Logits for sentence token_idx", sentence_idx, token_idx, test_logits, reference_logits)
             loss_metrics.append((sentence_idx, token_idx, metrics_value))
