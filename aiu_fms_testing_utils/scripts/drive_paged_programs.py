@@ -650,6 +650,7 @@ for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_promp
     extra_kwargs["attn_name"] = ATTN_NAME
     extra_kwargs["_kvcache_num_blocks_hint"] = model_config.num_blocks
 
+    eos_token_id = tokenizer.eos_token_id
     if local_rank == 0:
         dprint(f"*** testing program {program_id} ***")
         dprint(
@@ -699,6 +700,7 @@ for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_promp
                 model,
                 input_ids,
                 max_new_tokens,
+                eos_token_id,
                 GoldenTokenHook(cpu_validation_info.get_info("tokens")),
                 last_n_tokens=64,
                 timing=TIMING,
@@ -759,6 +761,7 @@ for program_id, valid_prompt, input_ids, extra_kwargs, sample_key in valid_promp
                 model,
                 input_ids,
                 max_new_tokens,
+                eos_token_id,
                 None,
                 last_n_tokens=64,
                 timing=TIMING,
