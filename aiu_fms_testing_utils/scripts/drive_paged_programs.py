@@ -817,7 +817,7 @@ for (
                 dprint(f"Prompt:\n{tokenizer.decode(tokens_prompt)}")
                 dprint(f"AIU tokens:\n{aiu_tokens_generated}")
                 dprint(f"AIU output:\n{tokenizer.decode(aiu_tokens_generated)}")
-    if count == 3:
+    if count == 10:
         exit()
 
 if not args.skip_validation and local_rank == 0:
