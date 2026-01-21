@@ -817,9 +817,9 @@ for (
                 dprint(f"Prompt:\n{tokenizer.decode(tokens_prompt)}")
                 dprint(f"AIU tokens:\n{aiu_tokens_generated}")
                 dprint(f"AIU output:\n{tokenizer.decode(aiu_tokens_generated)}")
-    if count == 2:
+    if count == 3:
         exit()
-        
+
 if not args.skip_validation and local_rank == 0:
     if len(failed_cases) != 0:
         dprint("the test failed with the following cases:")
