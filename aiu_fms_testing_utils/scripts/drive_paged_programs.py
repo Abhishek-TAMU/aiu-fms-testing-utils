@@ -726,6 +726,9 @@ for (
 
             for sentence_idx, token_idx, metrics_value in level_1_metrics:
                 if local_rank == 0:
+                    print("------ AIU_VALIDATION_INFO for sentence_idx, token_idx ------")
+                    print(aiu_validation_info.get_info("logits")[sentence_idx][token_idx])
+
                     aiu_token = torch.argmax(
                         aiu_validation_info.get_info("logits")[sentence_idx][token_idx],
                         dim=-1,
@@ -760,6 +763,11 @@ for (
                 prefill_chunk_size=args.prefill_chunk_size,
                 **extra_kwargs,
             )
+            [ [1, V]
+            [1, V]
+            [1, V]
+            [1, V]
+            [1, V] ]
 
             if local_rank == 0:
                 for sentence_idx, (reference_sentence, test_sentence) in enumerate(
