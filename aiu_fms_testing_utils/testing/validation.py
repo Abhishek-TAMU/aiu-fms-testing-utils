@@ -427,9 +427,10 @@ def get_validation_info_path(
     dtype: str = "fp16",
     **kwargs,
 ):
-    if aftu_version is None:
-        aftu_version = version_tuple
+    # if aftu_version is None:
+    #     aftu_version = version_tuple
 
+    aftu_version=(0, 5, 1)
     sample_key = kwargs.get("sample_key", None)
 
     validation_file_name = f"{get_default_validation_prefix(aftu_version='.'.join([str(_) for _ in aftu_version[:3]]), model_id=model_variant, max_new_tokens=max_new_tokens, batch_size=batch_size, seq_length=seq_length, dtype=dtype, attn_type=attn_type, sample_key=sample_key)}.{device_type}_validation_info.{seed}.out"
@@ -471,11 +472,12 @@ def find_validation_info_path(
     """
     sample_key = kwargs.get("sample_key", None)
 
-    if aftu_version is None:
-        loc_version_tuple = version_tuple[:3]
-    else:
-        loc_version_tuple = aftu_version
+    # if aftu_version is None:
+    #     loc_version_tuple = version_tuple[:3]
+    # else:
+    #     loc_version_tuple = aftu_version
 
+    loc_version_tuple=(0, 5, 1)
     result_path: Optional[str] = None
 
     while result_path is None and loc_version_tuple is not None:

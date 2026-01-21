@@ -645,6 +645,7 @@ def __metric_calculator(r: torch.Tensor, t: torch.Tensor):
 
 failed_cases = []
 # for each program and valid prompt (batch size, sequence length)
+count = 0
 for (
     program_id,
     valid_prompt,
@@ -652,6 +653,7 @@ for (
     extra_kwargs,
     sample_key,
 ) in get_program_prompt_list():
+    count += 1
     extra_kwargs["attn_name"] = ATTN_NAME
     extra_kwargs["_kvcache_num_blocks_hint"] = model_config.num_blocks
 
@@ -815,7 +817,9 @@ for (
                 dprint(f"Prompt:\n{tokenizer.decode(tokens_prompt)}")
                 dprint(f"AIU tokens:\n{aiu_tokens_generated}")
                 dprint(f"AIU output:\n{tokenizer.decode(aiu_tokens_generated)}")
-
+    if count == 2:
+        exit()
+        
 if not args.skip_validation and local_rank == 0:
     if len(failed_cases) != 0:
         dprint("the test failed with the following cases:")

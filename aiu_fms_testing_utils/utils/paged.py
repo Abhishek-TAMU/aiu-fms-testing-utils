@@ -603,8 +603,14 @@ def generate(
         result = torch.cat((result, next_val), dim=-1)
 
         # avoid continuing to generate if all have reached EOS
+        print("--------------- TEST EOS TOKEN -----------------")
+        print(eos_token_id)
+        print("--------------- TEST EOS TOKEN -----------------")
         if eos_token_id is not None:
             eos_found = torch.logical_or(eos_found, next_val == eos_token_id)
+            print("--------------- TEST eos_found -----------------")
+            print(eos_found)
+            print("--------------- TEST eos_found -----------------")
             if torch.sum(eos_found) == input_ids.shape[0]:
                 break
 
