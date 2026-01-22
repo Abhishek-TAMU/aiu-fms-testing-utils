@@ -613,15 +613,21 @@ def generate(
 
         if eos_token_id is not None:
             eos_found = torch.logical_or(eos_found, next_val == eos_token_id)
+            if eos_found.dim() == 1:
+                finished_rows = eos_found                      # (B,)
+            else:
+                finished_rows = eos_found.any(dim=1)            # (B,)
+
+            # next_val is (B, 1). Force EOS for any finished row.
             next_val = torch.where(
-                eos_found.unsqueeze(1),                      # (B,1)
+                finished_rows.unsqueeze(1),                    # (B,1)
                 next_val.new_full(next_val.shape, eos_token_id),
                 next_val,
             )
             if local_rank==0:
                 print("\n --------------- TEST eos_found -----------------")
                 print(eos_found)
-                print(eos_found.shape)
+                print(eos_found.shape, eos_found.dim(), finished_rows.shape)
                 print("\n --------------- TEST After next_val -----------------")
                 print(next_val)
                 print(next_val.shape)
