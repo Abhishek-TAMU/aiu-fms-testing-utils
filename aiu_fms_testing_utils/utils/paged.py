@@ -603,35 +603,62 @@ def generate(
 
         result = torch.cat((result, next_val), dim=-1)
 
-        # avoid continuing to generate if all have reached EOS
-        if local_rank==0:
-            print("\n--------------- TEST EOS TOKEN -----------------")
-            print(eos_token_id)
+        # # avoid continuing to generate if all have reached EOS
+        # if local_rank==0:
+        #     print("\n--------------- TEST EOS TOKEN -----------------")
+        #     print(eos_token_id)
+        # if eos_token_id is not None:
+        #     eos_found = torch.logical_or(eos_found, next_val == eos_token_id)
+        #     if local_rank==0:
+        #         print("\n --------------- TEST eos_found -----------------")
+        #         print(eos_found)
+        #         print("\n --------------- TEST next_val -----------------")
+        #         print(next_val)
+        #         print(next_val.shape)
+        #     if torch.sum(eos_found) == input_ids.shape[0]:
+        #         if local_rank==0:
+        #             print("\n --------------- Going to break eos found for all sentence -----------------")
+        #             print(eos_found)
+        #             print(input_ids.shape)
+        #         break
+
+        # eos_found: (B,) bool
+        # next_val: (B, 1) int64
+
         if eos_token_id is not None:
-            eos_found = torch.logical_or(eos_found, next_val == eos_token_id)
+            # If a sequence was already finished earlier, force it to emit EOS again
             if local_rank==0:
                 print("\n --------------- TEST eos_found -----------------")
                 print(eos_found)
-                print("\n --------------- TEST next_val -----------------")
+                print(eos_found.shape)
+                print("\n --------------- Check next_val -----------------")
                 print(next_val)
                 print(next_val.shape)
-            if torch.sum(eos_found) == input_ids.shape[0]:
-                print("\n --------------- Going to break eos found for all sentence -----------------")
-                print(eos_found)
-                print(input_ids.shape)
-                break
+            if eos_found.any():
+                next_val = torch.where(
+                    eos_found.unsqueeze(1),
+                    torch.full_like(next_val, eos_token_id),
+                    next_val,
+                )
+                if local_rank == 0:
+                    print("\n --------------- Check after change next_val -----------------")
+                    print(next_val)
+                    print(next_val.shape)
 
-        # if eos_token_id is not None:
-        #     finished = eos_found  # (B,)
-        #     # force finished sequences to keep emitting EOS
-        #     next_val = torch.where(
-        #         finished.unsqueeze(1),
-        #         torch.full_like(next_val, eos_token_id),
-        #         next_val,
-        #     )
-        #     eos_found = eos_found | (next_val.squeeze(-1) == eos_token_id)
-        #     if eos_found.all():
-        #         break
+            # Now update eos_found using this step's next_val (squeeze to avoid broadcasting)
+            eos_found = eos_found | (next_val.squeeze(1) == eos_token_id)
+            if local_rank == 0:
+                print("\n --------------- Check after change eos_found -----------------")
+                print(eos_found)
+                print(eos_found.shape)
+
+            # Break only when all are finished
+            if eos_found.all():
+                if local_rank == 0:
+                    print("\n --------------- All sentence eos_found -----------------")
+                    print(eos_found)
+                    print(eos_found.shape)
+                break
 
 
         if use_cache:
