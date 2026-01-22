@@ -605,17 +605,34 @@ def generate(
 
         # avoid continuing to generate if all have reached EOS
         if local_rank==0:
-            print("--------------- TEST EOS TOKEN -----------------")
+            print("\n--------------- TEST EOS TOKEN -----------------")
             print(eos_token_id)
-            print("--------------- TEST EOS TOKEN -----------------")
         if eos_token_id is not None:
             eos_found = torch.logical_or(eos_found, next_val == eos_token_id)
             if local_rank==0:
-                print("--------------- TEST eos_found -----------------")
+                print("\n --------------- TEST eos_found -----------------")
                 print(eos_found)
-                print("--------------- TEST eos_found -----------------")
+                print("\n --------------- TEST next_val -----------------")
+                print(next_val)
+                print(next_val.shape)
             if torch.sum(eos_found) == input_ids.shape[0]:
+                print("\n --------------- Going to break eos found for all sentence -----------------")
+                print(eos_found)
+                print(input_ids.shape)
                 break
+
+        # if eos_token_id is not None:
+        #     finished = eos_found  # (B,)
+        #     # force finished sequences to keep emitting EOS
+        #     next_val = torch.where(
+        #         finished.unsqueeze(1),
+        #         torch.full_like(next_val, eos_token_id),
+        #         next_val,
+        #     )
+        #     eos_found = eos_found | (next_val.squeeze(-1) == eos_token_id)
+        #     if eos_found.all():
+        #         break
+
 
         if use_cache:
             next_input = next_val

@@ -728,15 +728,17 @@ for (
             for sentence_idx, token_idx, metrics_value in level_1_metrics:
                 if local_rank == 0:
 
-                    aiu_token = torch.argmax(
-                        aiu_validation_info.get_info("logits")[sentence_idx][token_idx],
-                        dim=-1,
-                    )
-                    print("------ AIU_VALIDATION_INFO for sentence_idx, token_idx ------")
+                    aiu_token = torch.argmax(aiu_validation_info.get_info("logits")[sentence_idx][token_idx],dim=-1,)
+                    
                     tensor_list = aiu_validation_info.get_info("logits")[sentence_idx][token_idx]
-                    print(tensor_list.cpu().numpy())
+                    
+                    print("------ aiu_validation_info.get_info(logits)[sentence_idx][token_idx] ------")
+                    print(tensor_list)
+                    # print(tensor_list.cpu().numpy())
                     # print(aiu_validation_info.get_info("logits")[sentence_idx][token_idx])
-                    print("----aiu_token---", aiu_token)
+                    
+                    print("----torch.argmax(aiu_validation_info.get_info(logits)[sentence_idx][token_idx],dim=-1)---")
+                    print(aiu_token)
 
                     cpu_token = cpu_tokens[sentence_idx][valid_prompt[1] + token_idx]
                     aiu_str = tokenizer.decode(aiu_token).replace(
