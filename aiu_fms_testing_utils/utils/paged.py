@@ -601,7 +601,7 @@ def generate(
             else:
                 next_val = _next_val
 
-        result = torch.cat((result, next_val), dim=-1)
+        
 
         # avoid continuing to generate if all have reached EOS
         if local_rank==0:
@@ -631,12 +631,15 @@ def generate(
                 print("\n --------------- TEST After next_val -----------------")
                 print(next_val)
                 print(next_val.shape)
-            if torch.sum(eos_found) == input_ids.shape[0]:
-                if local_rank==0:
-                    print("\n --------------- Going to break eos found for all sentence -----------------")
-                    print(eos_found)
-                    print(input_ids.shape)
-                break
+            
+        result = torch.cat((result, next_val), dim=-1)
+
+        if (eos_token_id is not None) and (torch.sum(eos_found) == input_ids.shape[0]):
+            if local_rank==0:
+                print("\n --------------- Going to break eos found for all sentence -----------------")
+                print(eos_found)
+                print(input_ids.shape)
+            break
 
         # # eos_found: (B,) bool
         # # next_val: (B, 1) int64
