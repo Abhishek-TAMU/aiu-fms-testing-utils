@@ -770,11 +770,6 @@ for (
                 prefill_chunk_size=args.prefill_chunk_size,
                 **extra_kwargs,
             )
-            [ [1, V]
-            [1, V]
-            [1, V]
-            [1, V]
-            [1, V] ]
 
             if local_rank == 0:
                 for sentence_idx, (reference_sentence, test_sentence) in enumerate(

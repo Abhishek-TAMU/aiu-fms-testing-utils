@@ -579,7 +579,7 @@ def generate(
                 v, _ = torch.topk(logits, top_k)
                 logits[logits < v[:, [-1]]] = -float("inf")
 
-            probs = F.softmax(logits, dim=-1)  # noqa: F821
+            probs = F.softmax(logits, dim=-1)  # type: ignore # noqa: F821
             next_val = torch.multinomial(probs, num_samples=1)
         else:
             next_val = torch.argmax(logits, dim=-1).unsqueeze(0).t()
@@ -600,8 +600,6 @@ def generate(
                 next_val.copy_(torch.cat((_next_val, _next_val), dim=0))
             else:
                 next_val = _next_val
-
-        
 
         # avoid continuing to generate if all have reached EOS
         if local_rank==0:
@@ -636,49 +634,10 @@ def generate(
 
         if (eos_token_id is not None) and (torch.sum(eos_found) == input_ids.shape[0]):
             if local_rank==0:
-                print("\n --------------- Going to break eos found for all sentence -----------------")
+                print("\n --------------- Going to break as eos found for all sentence -----------------")
                 print(eos_found)
                 print(input_ids.shape)
             break
-
-        # # eos_found: (B,) bool
-        # # next_val: (B, 1) int64
-
-        # if eos_token_id is not None:
-        #     # If a sequence was already finished earlier, force it to emit EOS again
-        #     if local_rank==0:
-        #         print("\n --------------- TEST eos_found -----------------")
-        #         print(eos_found)
-        #         print(eos_found.shape)
-        #         print("\n --------------- Check next_val -----------------")
-        #         print(next_val)
-        #         print(next_val.shape)
-        #     if eos_found.any():
-        #         next_val = torch.where(
-        #             eos_found.unsqueeze(1),
-        #             torch.full_like(next_val, eos_token_id),
-        #             next_val,
-        #         )
-        #         if local_rank == 0:
-        #             print("\n --------------- Check after change next_val -----------------")
-        #             print(next_val)
-        #             print(next_val.shape)
-
-        #     # Now update eos_found using this step's next_val (squeeze to avoid broadcasting)
-        #     eos_found = eos_found | (next_val.squeeze(1) == eos_token_id)
-        #     if local_rank == 0:
-        #         print("\n --------------- Check after change eos_found -----------------")
-        #         print(eos_found)
-        #         print(eos_found.shape)
-
-        #     # Break only when all are finished
-        #     if eos_found.all():
-        #         if local_rank == 0:
-        #             print("\n --------------- All sentence eos_found -----------------")
-        #             print(eos_found)
-        #             print(eos_found.shape)
-        #         break
-
 
         if use_cache:
             next_input = next_val
