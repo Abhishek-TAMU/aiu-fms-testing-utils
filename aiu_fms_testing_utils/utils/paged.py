@@ -86,6 +86,7 @@ def generate(
     print("INIT INFO IN GENERATE")
     print(input_ids, input_ids.shape)
     print(max_new_tokens, temperature, top_k, do_sample, num_beams, use_cache, prefill_chunk_size, eos_token_id, timing, post_iteration_hook, extra_kwargs)
+    print(extra_kwargs["mask"].shape, extra_kwargs["position_ids"].shape)
     random.seed(0)
     if num_beams != 1:
         raise NotImplementedError("generate() does yet not support beam search")
