@@ -704,6 +704,8 @@ for (
                 )
 
         if args.test_type == "metrics":
+            print("CPU info tokens", cpu_validation_info.get_info("tokens"))
+            print("Shape of CPU info tokens", len(cpu_validation_info.get_info("tokens")))
             aiu_validation_info = extract_validation_information(
                 model,
                 input_ids,
