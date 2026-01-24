@@ -704,8 +704,8 @@ for (
                 )
 
         if args.test_type == "metrics":
-            print("CPU info tokens", cpu_validation_info.get_info("tokens"))
-            print("Shape of CPU info tokens", len(cpu_validation_info.get_info("tokens")))
+            # print("CPU info tokens", cpu_validation_info.get_info("tokens"))
+            # print("Shape of CPU info tokens", len(cpu_validation_info.get_info("tokens"))) # 1312 for program 23
             aiu_validation_info = extract_validation_information(
                 model,
                 input_ids,
@@ -734,12 +734,12 @@ for (
                     
                     tensor_list = aiu_validation_info.get_info("logits")[sentence_idx][token_idx]
                     
-                    print("------ aiu_validation_info.get_info(logits)[sentence_idx][token_idx] ------")
+                    print("\n------ aiu_validation_info.get_info(logits)[sentence_idx][token_idx] ------")
                     print(tensor_list)
                     # print(tensor_list.cpu().numpy())
                     # print(aiu_validation_info.get_info("logits")[sentence_idx][token_idx])
                     
-                    print("----torch.argmax(aiu_validation_info.get_info(logits)[sentence_idx][token_idx],dim=-1)---")
+                    print("\n----torch.argmax(aiu_validation_info.get_info(logits)[sentence_idx][token_idx],dim=-1)---")
                     print(aiu_token)
 
                     cpu_token = cpu_tokens[sentence_idx][valid_prompt[1] + token_idx]
@@ -829,7 +829,7 @@ for (
                 dprint(f"Prompt:\n{tokenizer.decode(tokens_prompt)}")
                 dprint(f"AIU tokens:\n{aiu_tokens_generated}")
                 dprint(f"AIU output:\n{tokenizer.decode(aiu_tokens_generated)}")
-    if count == 1:
+    if count == 10:
         exit()
 
 if not args.skip_validation and local_rank == 0:

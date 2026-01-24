@@ -614,17 +614,61 @@ def generate(
             print(next_val)
             print(next_val.shape)
 
-        if eos_token_id is not None:
-            eos_found = torch.logical_or(eos_found, next_val == eos_token_id)
-            if eos_found.dim() == 1:
-                finished_rows = eos_found                      # (B,)
-            else:
-                finished_rows = eos_found.any(dim=1)            # (B,)
+        # if eos_token_id is not None:
+        #     eos_found = torch.logical_or(eos_found, next_val == eos_token_id)
+        #     if eos_found.dim() == 1:
+        #         finished_rows = eos_found                      # (B,)
+        #     else:
+        #         finished_rows = eos_found.any(dim=1)            # (B,)
 
-            # next_val is (B, 1). Force EOS for any finished row.
+        #     # next_val is (B, 1). Force EOS for any finished row.
+        #     next_val = torch.where(
+        #         finished_rows.unsqueeze(1),                    # (B,1)
+        #         next_val.new_full(next_val.shape, eos_token_id),
+        #         next_val,
+        #     )
+        #     if local_rank==0:
+        #         print("\n --------------- TEST eos_found -----------------")
+        #         print(eos_found)
+        #         print(eos_found.shape, eos_found.dim(), finished_rows.shape)
+        #         print("\n --------------- TEST After next_val -----------------")
+        #         print(next_val)
+        #         print(next_val.shape)
+            
+        
+        # NEW SOLUTION 
+        pad_token_id = 100256  # given
+
+        if eos_token_id is not None:
+            # 1) Snapshot who was finished BEFORE this iteration
+            prev_eos_found = eos_found
+
+            # Derive prev_finished_rows in the same style as your existing code
+            if prev_eos_found.dim() == 1:
+                prev_finished_rows = prev_eos_found                  # (B,)
+            else:
+                prev_finished_rows = prev_eos_found.any(dim=1)        # (B,)
+
+            # 2) Update eos_found using the raw next_val from this step
+            eos_found = torch.logical_or(eos_found, next_val == eos_token_id)
+
+            if eos_found.dim() == 1:
+                finished_rows = eos_found                             # (B,)
+            else:
+                finished_rows = eos_found.any(dim=1)                   # (B,)
+
+            # 3) Ensure EOS is produced for any finished row (this makes EOS appear at least once)
             next_val = torch.where(
-                finished_rows.unsqueeze(1),                    # (B,1)
+                finished_rows.unsqueeze(1),                            # (B,1)
                 next_val.new_full(next_val.shape, eos_token_id),
+                next_val,
+            )
+
+            # 4) Prevent repeated EOS appends:
+            # If the row was already finished *before* this iteration, append PAD instead.
+            next_val = torch.where(
+                prev_finished_rows.unsqueeze(1),                       # (B,1)
+                next_val.new_full(next_val.shape, pad_token_id),
                 next_val,
             )
             if local_rank==0:
@@ -634,7 +678,7 @@ def generate(
                 print("\n --------------- TEST After next_val -----------------")
                 print(next_val)
                 print(next_val.shape)
-            
+        
         result = torch.cat((result, next_val), dim=-1)
 
         if (eos_token_id is not None) and (torch.sum(eos_found) == input_ids.shape[0]):
