@@ -711,8 +711,10 @@ def generate(
 
     if timing != "":
         return result, times
-    print("RESULTS BEFORE RETURNING", result)
-    print("RESULTS BEFORE RETURNING", result.shape)
+    
+    if local_rank == 0:
+        print("RESULTS BEFORE RETURNING", result)
+        print("RESULTS BEFORE RETURNING", result.shape)
     return result
 
 

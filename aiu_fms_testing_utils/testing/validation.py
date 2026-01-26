@@ -322,6 +322,8 @@ def extract_validation_information(
         ]
     else:
         validation_info = [{"tokens": t.to("cpu")} for t in torch.unbind(result)]
+    print("-----Validation info-------", validation_info)
+    print("-----Validation info len-------", len(validation_info))
     return ValidationInfo(validation_info)
 
 
