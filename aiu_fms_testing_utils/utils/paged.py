@@ -560,6 +560,9 @@ def generate(
             torch._dynamo.mark_static(kwargs["slot_mapping"], 1)  # always 1
             torch._dynamo.mark_static(kwargs["position_ids"], 1)  # always 1
 
+            print("========= input_ids before decode model ============", input_ids)
+            print("========= input_ids shape before decode model ============", input_ids.shape)
+            print("========= kwargs before decode model ============", kwargs)
             logits, past_key_value_states = model(input_ids, **kwargs)
 
             # typically this is done outside of prefill/decode logic, but since this logic already exists as part of the
