@@ -6,7 +6,7 @@ from aiu_fms_testing_utils.utils.aiu_setup import dprint
 from aiu_fms_testing_utils._version import version_tuple
 import os
 from aiu_fms_testing_utils.testing.utils import format_kwargs_to_string
-
+from aiu_fms_testing_utils.utils.aiu_setup import local_rank
 import hashlib
 
 
@@ -322,8 +322,14 @@ def extract_validation_information(
         ]
     else:
         validation_info = [{"tokens": t.to("cpu")} for t in torch.unbind(result)]
-    print("-----Validation info-------", validation_info)
-    print("-----Validation info len-------", len(validation_info))
+    if local_rank == 0:
+        # local 0, each sentence shape of tokens and logits
+        # print("-----Validation info-------", validation_info)
+        print("-----Validation info len-------", len(validation_info))
+        for valid_in in validation_info:
+            print("--- tokens ----", valid_in["tokens"], valid_in["tokens"].shape)
+            print("--- logits ----", valid_in["logits"], valid_in["logits"].shape)
+
     return ValidationInfo(validation_info)
 
 
