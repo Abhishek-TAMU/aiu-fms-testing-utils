@@ -592,6 +592,10 @@ def generate(
         if post_iteration_hook is not None:
             _logits = logits
             _next_val = next_val
+            if local_rank==0:
+                print("\n --------------- TEST Before post_iteration_hook next_val -----------------")
+                print(_next_val)
+                print(_next_val.shape)
             # since we cannot handle batch size 1 for fp8 and mimic with batch size 2, we need to only pass in the first logits/next_val
             if is_fp8 and not is_batch:
                 _logits = logits[0].unsqueeze(0)
