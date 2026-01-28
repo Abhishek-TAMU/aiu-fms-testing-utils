@@ -328,8 +328,10 @@ def extract_validation_information(
         print("-----Validation info len-------", len(validation_info))
         for valid_in in validation_info:
             print("--- tokens ----", valid_in["tokens"], valid_in["tokens"].shape)
-            print("--- logits ----", valid_in["logits"], valid_in["logits"].shape)
-
+            if "logits" in valid_in:
+                print("--- logits ----", valid_in["logits"], valid_in["logits"].shape)
+            else:
+                print("--- No logits in valid_in ----")
     return ValidationInfo(validation_info)
 
 
