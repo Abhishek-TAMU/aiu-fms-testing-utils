@@ -658,7 +658,7 @@ def generate(
                 prev_finished_rows = prev_eos_found.any(dim=1)        # (B,)
 
             # 2) Update eos_found using the raw next_val from this step
-            eos_found = torch.logical_or(eos_found, next_val == eos_token_id)
+            eos_found = torch.logical_or(eos_found, (next_val == eos_token_id).squeeze(1))
 
             if eos_found.dim() == 1:
                 finished_rows = eos_found                             # (B,)
