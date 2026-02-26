@@ -39,6 +39,7 @@ from aiu_fms_testing_utils.utils import (
     warmup_model,
 )
 from aiu_fms_testing_utils.utils.aiu_setup import aiu_dist_setup, dprint, local_rank
+from aiu_fms_testing_utils.utils.model_setup import requires_embedding_inputs
 from aiu_fms_testing_utils.utils.paged import (
     ProgramCriteria,
     get_programs_prompts,
@@ -871,7 +872,6 @@ def get_valid_prompts(
                                 allow_truncation=allow_truncation,
                                 enforce_sizes=enforce_sizes,
                             )
-                            used_keys.add(program_seq_key[0])
                             yield ValidPrompt(
                                 program_id=program_seq_key[0],
                                 shape=valid_prompt_shape,
@@ -1429,6 +1429,9 @@ def main() -> None:
             model_config=model_config,
         )
 
+    # Check if model is multi-modal
+    is_multimodal = requires_embedding_inputs(model.config)
+
     # Model Warmup
     ## warmup with any input so compiler produces criteria json
     ## TODO: Swap this with _prepare_inputs once fix for shape_id is available
@@ -1448,6 +1451,7 @@ def main() -> None:
         compile_dynamic_sendnn=True,
         stagger_update_lazyhandle=args.stagger_update_lazyhandle,
         prefill_chunk_size=args.prefill_chunk_size,
+        is_multimodal=is_multimodal,
         **extra_kwargs,
     )
     if args.distributed:
