@@ -353,7 +353,7 @@ def _prepare_inputs(
     input_ids, extra_kwargs = pad_input_ids(
         prompt_list,
         min_pad_length=seq_length,
-        pad_token_id=tokenizer.pad_token_id if hasattr(tokenizer, 'pad_token_id') else None
+        # pad_token_id=tokenizer.pad_token_id if hasattr(tokenizer, 'pad_token_id') else None
     )
     extra_kwargs["mask"] = extra_kwargs["mask"].to(torch.float16)
 
