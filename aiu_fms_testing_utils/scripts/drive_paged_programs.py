@@ -1401,15 +1401,15 @@ def main() -> None:
 
     args = parse_cli_args()
     args.model_variant="ibm-granite/granite-3.3-8b-instruct"
-    args.distributed=False
-    args.enforce_homogeneous_prompt_programs=True
-    args.prioritize_large_batch_sizes=True
-    args.max_new_tokens=32
-    args.prefill_chunk_size=1024
-    args.cross_entropy_threshold=2.6
-    args.validation_info_outputs_dir="/home/senuser/models/validation_info/continous_batching/granite_3/sharegpt_homogeneous"
-    args.program_criteria_json_path="/home/senuser/aiu-tests/scripts/program_criteria_new.json"
-    args.dataset_path="/home/senuser/models/ShareGPT_V3_unfiltered_cleaned_split.json"
+    # args.distributed=False
+    # args.enforce_homogeneous_prompt_programs=True
+    # args.prioritize_large_batch_sizes=True
+    # args.max_new_tokens=32
+    # args.prefill_chunk_size=1024
+    # args.cross_entropy_threshold=2.6
+    # args.validation_info_outputs_dir="/home/senuser/models/validation_info/continous_batching/granite_3/sharegpt_homogeneous"
+    # args.program_criteria_json_path="/home/senuser/aiu-tests/scripts/program_criteria_new.json"
+    # args.dataset_path="/home/senuser/models/ShareGPT_V3_unfiltered_cleaned_split.json"
 
     is_fp8: bool = "fp8" in args.attention_type
     if args.skip_validation and args.test_type == "metrics":
