@@ -48,6 +48,14 @@ from aiu_fms_testing_utils.testing.utils import format_kwargs_to_string
 # Constants
 PAD_MULTIPLE = 64
 
+import debugpy
+
+# Listen on all interfaces (0.0.0.0) so port-forward can connect
+debugpy.listen(("0.0.0.0", 5678))
+print("⏳ Waiting for debugger to attach on port 5678...")
+debugpy.wait_for_client()  # Script pauses here until debugger connects
+print("✅ Debugger attached! Continuing execution...")
+
 
 @dataclass
 class ProgramInfo:
@@ -1377,7 +1385,32 @@ def main() -> None:
     """
 
     # Environment Setup
+    os.environ["DEM_COMPILE_VERSION"] = "1"
+    os.environ["DTCOMPILER_KEEP_EXPORT"] = "false"
+    os.environ["DTLOG_LEVEL"] = "error"
+    os.environ["DT_DEEPRT_VERBOSE"] = "-1"
+    os.environ["FLEX_HDMA_COLLSIZE"] = "33554432"
+    os.environ["FLEX_HDMA_P2PSIZE"] = "268435456"
+    os.environ["HF_HUB_CACHE"] = "/home/senuser/models/huggingface_cache/hub"
+    os.environ["TORCH_SENDNN_CACHE_ENABLE"] = "0"
+    os.environ["VLLM_DT_CHUNK_LEN"] = "1024"
+    os.environ["VLLM_DT_MAX_BATCH_SIZE"] = "16"
+    os.environ["VLLM_DT_MAX_BATCH_TKV_LIMIT"] = "131072"
+    os.environ["VLLM_DT_MAX_CONTEXT_LEN"] = "3072"
+
+
     args = parse_cli_args()
+    args.model_variant="ibm-granite/granite-3.3-8b-instruct"
+    args.distributed=False
+    args.enforce_homogeneous_prompt_programs=True
+    args.prioritize_large_batch_sizes=True
+    args.max_new_tokens=32
+    args.prefill_chunk_size=1024
+    args.cross_entropy_threshold=2.6
+    args.validation_info_outputs_dir="/home/senuser/models/validation_info/continous_batching/granite_3/sharegpt_homogeneous"
+    args.program_criteria_json_path="/home/senuser/aiu-tests/scripts/program_criteria_new.json"
+    args.dataset_path="/home/senuser/models/ShareGPT_V3_unfiltered_cleaned_split.json"
+
     is_fp8: bool = "fp8" in args.attention_type
     if args.skip_validation and args.test_type == "metrics":
         dprint("When skipping validation, only test_type will be ignored")
