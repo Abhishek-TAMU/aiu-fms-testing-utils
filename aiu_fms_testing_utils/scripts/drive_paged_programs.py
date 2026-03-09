@@ -48,13 +48,13 @@ from aiu_fms_testing_utils.testing.utils import format_kwargs_to_string
 # Constants
 PAD_MULTIPLE = 64
 
-import debugpy
+# import debugpy
 
-# Listen on all interfaces (0.0.0.0) so port-forward can connect
-debugpy.listen(("0.0.0.0", 5678))
-print("⏳ Waiting for debugger to attach on port 5678...")
-debugpy.wait_for_client()  # Script pauses here until debugger connects
-print("✅ Debugger attached! Continuing execution...")
+# # Listen on all interfaces (0.0.0.0) so port-forward can connect
+# debugpy.listen(("0.0.0.0", 5678))
+# print("⏳ Waiting for debugger to attach on port 5678...")
+# debugpy.wait_for_client()  # Script pauses here until debugger connects
+# print("✅ Debugger attached! Continuing execution...")
 
 
 @dataclass
