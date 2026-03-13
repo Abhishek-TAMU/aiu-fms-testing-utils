@@ -39,6 +39,7 @@ def generate(
     use_cache: bool = False,
     prefill_chunk_size: int = 0,
     eos_token_id: Optional[int] = None,
+    pad_token_id: Optional[int] = None,
     timing: str = "",
     post_iteration_hook: Optional[
         Callable[
