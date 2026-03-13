@@ -41,6 +41,12 @@ def generate(
     eos_token_id: Optional[int] = None,
     pad_token_id: Optional[int] = None,
     timing: str = "",
+    prepare_model_inputs_hook: Optional[
+        Callable[
+            [int, torch.Tensor, MutableMapping[str, Any]],
+            Tuple[torch.Tensor, MutableMapping[str, Any]],
+        ]
+    ] = None,
     post_iteration_hook: Optional[
         Callable[
             [int, torch.Tensor, torch.Tensor, MutableMapping[str, Any]],
