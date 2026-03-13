@@ -1491,7 +1491,7 @@ def main() -> None:
     # matching vllm warmup to pad to 2 on fp8, and no pad for fp16
     if is_fp8:
         prompt_list = prompt_list * 2
-    input_ids, extra_kwargs = pad_input_ids(prompt_list, min_pad_length=64)
+    input_ids, extra_kwargs = pad_input_ids(prompt_list, min_pad_length=64, pad_token_id=tokenizer.pad_token_id if hasattr(tokenizer, 'pad_token_id') else 0)
     extra_kwargs["mask"] = extra_kwargs["mask"].to(torch.float16)
     extra_kwargs["attn_name"] = env_config.attn_name
     extra_kwargs["_kvcache_num_blocks_hint"] = model_config.num_blocks
@@ -1503,6 +1503,7 @@ def main() -> None:
         stagger_update_lazyhandle=args.stagger_update_lazyhandle,
         prefill_chunk_size=args.prefill_chunk_size,
         is_multimodal=is_multimodal,
+        pad_token_id=tokenizer.pad_token_id if hasattr(tokenizer, 'pad_token_id') else None,
         **extra_kwargs,
     )
     if args.distributed:
