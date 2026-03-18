@@ -171,7 +171,7 @@ def generate(
     )
 
     ### Multimodal related
-    is_multimodal = requires_embedding_inputs(model.config)
+    # is_multimodal = requires_embedding_inputs(model.config)
     text_config = _get_text_config(model.config)
     # if is_multimodal and prepare_model_inputs_hook is None:
     #     # Best effort warning about what to pass for the post iteration hook;
@@ -200,7 +200,12 @@ def generate(
     # if the user provides a hint to the number of blocks to use, use it directly
     NUM_BLOCKS = kwargs.get("_kvcache_num_blocks_hint")
     if NUM_BLOCKS is None:
-        NUM_BLOCKS = (_MAX_BATCH * _MAX_CONTEXT_LENGTH) // BLOCK_SIZE
+        # Use VLLM_DT_MAX_BATCH_TKV_LIMIT if available to deduce NUM_BLOCKS
+        _MAX_BATCH_TKV_LIMIT = os.environ.get("VLLM_DT_MAX_BATCH_TKV_LIMIT")
+        if _MAX_BATCH_TKV_LIMIT is not None:
+            NUM_BLOCKS = int(_MAX_BATCH_TKV_LIMIT) // BLOCK_SIZE
+        else:
+            NUM_BLOCKS = (_MAX_BATCH * _MAX_CONTEXT_LENGTH) // BLOCK_SIZE
 
     model_dtype = _infer_model_dtype(model)
     logger.debug("Inferred model weight dtype %s", model_dtype)
