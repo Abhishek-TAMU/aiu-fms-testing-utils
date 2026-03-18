@@ -200,12 +200,7 @@ def generate(
     # if the user provides a hint to the number of blocks to use, use it directly
     NUM_BLOCKS = kwargs.get("_kvcache_num_blocks_hint")
     if NUM_BLOCKS is None:
-        # Use VLLM_DT_MAX_BATCH_TKV_LIMIT if available to deduce NUM_BLOCKS
-        _MAX_BATCH_TKV_LIMIT = os.environ.get("VLLM_DT_MAX_BATCH_TKV_LIMIT")
-        if _MAX_BATCH_TKV_LIMIT is not None:
-            NUM_BLOCKS = int(_MAX_BATCH_TKV_LIMIT) // BLOCK_SIZE
-        else:
-            NUM_BLOCKS = (_MAX_BATCH * _MAX_CONTEXT_LENGTH) // BLOCK_SIZE
+        NUM_BLOCKS = (_MAX_BATCH * _MAX_CONTEXT_LENGTH) // BLOCK_SIZE
 
     model_dtype = _infer_model_dtype(model)
     logger.debug("Inferred model weight dtype %s", model_dtype)
