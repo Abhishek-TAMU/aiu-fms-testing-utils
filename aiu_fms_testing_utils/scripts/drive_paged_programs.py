@@ -1495,17 +1495,17 @@ def main() -> None:
     extra_kwargs["mask"] = extra_kwargs["mask"].to(torch.float16)
     extra_kwargs["attn_name"] = env_config.attn_name
     extra_kwargs["_kvcache_num_blocks_hint"] = model_config.num_blocks
-    warmup_model(
-        model=model,
-        input_ids=input_ids,
-        max_new_tokens=args.max_new_tokens,
-        compile_dynamic_sendnn=True,
-        stagger_update_lazyhandle=args.stagger_update_lazyhandle,
-        prefill_chunk_size=args.prefill_chunk_size,
-        is_multimodal=is_multimodal,
-        pad_token_id=tokenizer.pad_token_id if hasattr(tokenizer, 'pad_token_id') else None,
-        **extra_kwargs,
-    )
+    # warmup_model(
+    #     model=model,
+    #     input_ids=input_ids,
+    #     max_new_tokens=args.max_new_tokens,
+    #     compile_dynamic_sendnn=True,
+    #     stagger_update_lazyhandle=args.stagger_update_lazyhandle,
+    #     prefill_chunk_size=args.prefill_chunk_size,
+    #     is_multimodal=is_multimodal,
+    #     pad_token_id=tokenizer.pad_token_id if hasattr(tokenizer, 'pad_token_id') else None,
+    #     **extra_kwargs,
+    # )
     if args.distributed:
         # wait for rank0 to be finished as it is the only one generating the criteria json
         # this is needed since otherwise we may run into a race condition
