@@ -173,14 +173,6 @@ def generate(
     ### Multimodal related
     # is_multimodal = requires_embedding_inputs(model.config)
     text_config = _get_text_config(model.config)
-    # if is_multimodal and prepare_model_inputs_hook is None:
-    #     # Best effort warning about what to pass for the post iteration hook;
-    #     # FMS interfaces are not very clearly defined at the moment. We raise
-    #     # instead of setting a default here to align with FMS behaviors.
-    #     msg = "The model appears to be multimodal, but no prepare_model_inputs_hook was passed!"
-    #     if hasattr(model, "prepare_inputs_for_generation"):
-    #         msg += " Hint: It looks like this model implements prepare_inputs_for_generation; did you mean to pass it?"
-    #     raise ValueError(msg)
 
     result = input_ids
     next_input = input_ids
