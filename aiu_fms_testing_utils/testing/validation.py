@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Tuple, Callable, MutableMapping, Any, Optional
+from typing import List, Literal, Tuple, Callable, MutableMapping, Any, Optional
 
 import torch
 from aiu_fms_testing_utils.utils.aiu_setup import dprint, r0dprint
@@ -443,8 +443,9 @@ def get_validation_info_path(
     dtype: str = "fp16",
     **kwargs,
 ):
-    if aftu_version is None:
-        aftu_version = version_tuple
+    # if aftu_version is None:
+    #     aftu_version = version_tuple
+    aftu_version: tuple[Literal[0], Literal[7], Literal[1]] = (0, 7, 1)    
 
     sample_key = kwargs.get("sample_key", None)
 
@@ -507,11 +508,12 @@ def find_validation_info_path(
     """
     sample_key = kwargs.get("sample_key", None)
 
-    if aftu_version is None:
-        loc_version_tuple = version_tuple[:3]
-    else:
-        loc_version_tuple = aftu_version
+    # if aftu_version is None:
+    #     loc_version_tuple = version_tuple[:3]
+    # else:
+    #     loc_version_tuple = aftu_version
 
+    loc_version_tuple: tuple[Literal[0], Literal[7], Literal[1]] = (0, 7, 1)
     result_path: Optional[str] = None
 
     while result_path is None and loc_version_tuple is not None:
