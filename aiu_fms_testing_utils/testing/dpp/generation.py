@@ -216,12 +216,8 @@ def generate_aiu_cpu_test(
             validation_info_outputs_dir,
             save_validation_info_outputs,
             validation_model,
-            valid_prompt.shape,
-            valid_prompt.input_ids,
-            valid_prompt.extra_kwargs,
-            valid_prompt.sample_key,
-            env_config.attn_type,
-            env_config.cpu_dtype,
+            valid_prompt,
+            env_config,
             tokenizer,
         )
 
