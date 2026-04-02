@@ -433,6 +433,8 @@ def _load_validation_info(
     )
     if full_path is not None:
         dprint(f"cpu validation info found for seed={seed} -- loading it")
+        dprint(f"full path: {full_path}, sample key: {sample_key}")
+        exit(1)
         return load_validation_information(full_path, "logits", batch_size, tokenizer)
     else:
         return None
