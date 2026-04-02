@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import List, Literal, Tuple, Callable, MutableMapping, Any, Optional
 
 import torch
+from transformers import dpr
 from aiu_fms_testing_utils.utils.aiu_setup import dprint, r0dprint
 import os
 from aiu_fms_testing_utils.testing.utils import format_kwargs_to_string
@@ -155,6 +156,7 @@ def get_default_validation_prefix(
     kwargs_str = format_kwargs_to_string(**kwargs)
 
     filename = f"{kwargs_str}"
+    r0dprint("filename of CPU info: {filename}")
     hash_object = hashlib.sha256(filename.encode("utf-8"))
     hex_digest = hash_object.hexdigest()
     return f"{hex_digest}_{aftu_version}"
@@ -530,6 +532,7 @@ def find_validation_info_path(
             dtype,
             sample_key=sample_key,
         )
+        r0dprint(f"Checking for validation info at {full_path}")
         # if the path is found, we are done searching and can return
         if os.path.exists(full_path):
             result_path = full_path
