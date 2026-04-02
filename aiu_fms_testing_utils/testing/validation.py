@@ -155,7 +155,7 @@ def get_default_validation_prefix(
     kwargs_str = format_kwargs_to_string(**kwargs)
 
     filename = f"{kwargs_str}"
-    r0dprint("filename of CPU info: {filename}")
+    r0dprint(f"filename of CPU info: {filename}")
     hash_object = hashlib.sha256(filename.encode("utf-8"))
     hex_digest = hash_object.hexdigest()
     return f"{hex_digest}_{aftu_version}"
