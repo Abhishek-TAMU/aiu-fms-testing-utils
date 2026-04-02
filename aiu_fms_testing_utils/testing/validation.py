@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import List, Literal, Tuple, Callable, MutableMapping, Any, Optional
 
 import torch
-from transformers import dpr
 from aiu_fms_testing_utils.utils.aiu_setup import dprint, r0dprint
 import os
 from aiu_fms_testing_utils.testing.utils import format_kwargs_to_string
