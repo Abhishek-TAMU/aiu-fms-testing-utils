@@ -465,7 +465,7 @@ def get_validation_info_path(
         batch_size=batch_size,
         seq_length=seq_length,
         dtype=dtype,
-        attn_type=attn_type,
+        attn_type=attn_type.value,
         sample_key=sample_key,
     )
     validation_file_name = (
